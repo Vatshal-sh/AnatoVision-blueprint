@@ -32,6 +32,16 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            -webkit-user-select: none;
+            /* Safari */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* IE10+/Edge */
+            user-select: none;
+            /* Standard */
+            -webkit-touch-callout: none;
+            /* iOS Safari */
         }
 
         /* --- Global Utility Classes --- */
@@ -81,6 +91,48 @@
             flex-direction: column;
             padding: 20px 15px;
             overflow-y: auto;
+        }
+
+        /* Sidebar Smooth Transition */
+        .sidebar {
+            transition: width 0.3s ease;
+            overflow-x: hidden;
+            white-space: nowrap;
+            /* Prevents text from wrapping when collapsing */
+        }
+
+        /* Collapsed State */
+        .sidebar.collapsed {
+            width: 75px;
+            /* Compact width for icons only */
+            padding: 20px 10px;
+        }
+
+        /* Hide text elements that don't fit */
+        .sidebar.collapsed .brand,
+        .sidebar.collapsed .toggle-text {
+            display: none;
+        }
+
+        /* Hide full sections */
+        .sidebar.collapsed .nav-section h3,
+        .sidebar.collapsed .upgrade-card {
+            display: none;
+        }
+
+        /* Center the toggle button icon when collapsed */
+        .sidebar.collapsed #sidebar-toggle-btn {
+            justify-content: center;
+            padding: 8px 0;
+        }
+
+        /* Clip the nav items to only show the emoji/icon */
+        .sidebar.collapsed .nav-item {
+            display: block;
+            width: 45px;
+            overflow: hidden;
+            text-overflow: clip;
+            padding: 10px 0 10px 15px;
         }
 
         .brand {
@@ -655,6 +707,10 @@
     <div class="app-container">
 
         <aside class="sidebar">
+            <button class="btn btn-outline" id="sidebar-toggle-btn" onclick="toggleSidebar()" style="margin-bottom: 20px; width: 100%; display: flex; align-items: center; gap: 10px;">
+                <span class="toggle-icon" style="font-size: 16px;">☰</span> 
+                <span class="toggle-text">HIDE</span>
+            </button>
             <div class="brand">
                 <span class="brand-icon">🫁</span> AnatoVision
             </div>
@@ -954,10 +1010,10 @@
 
         </main>
         <aside class="info-panel">
-            <button class="btn" style="text-align: left; padding-left: 0; color: var(--text-muted);">‹ Back</button>
+            <button class="btn" onclick="document.querySelector('.info-panel').style.display = 'none';" style="text-align: left; padding-left: 0; color: var(--text-muted);">‹ Back</button>
 
             <div class="panel-header">
-                <h2>Heart 🔊
+                <h2>Heart ❤️
                     <span style="margin-left: auto; font-size: 16px; color: var(--text-muted); cursor: pointer;">🔖</span>
                 </h2>
             </div>
@@ -1015,6 +1071,59 @@
 
     </div>
     <script>
+        // --- PRIVACY MEASURES ---
+
+// 1. Disable Right-Click (Context Menu)
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// 2. Disable Copying and Developer Tools Shortcuts
+document.addEventListener('keydown', function(e) {
+    // Block F12
+    if (e.key === 'F12') {
+        e.preventDefault();
+    }
+    
+    // Block Ctrl shortcuts (Windows/Linux)
+    if (e.ctrlKey) {
+        if (
+            e.key === 'c' || e.key === 'C' || // Copy
+            e.key === 'u' || e.key === 'U' || // View Source
+            e.key === 's' || e.key === 'S' || // Save Page
+            e.key === 'p' || e.key === 'P' || // Print Page
+            e.key === 'a' || e.key === 'A'    // Select All
+        ) {
+            e.preventDefault();
+        }
+    }
+    
+    // Block Cmd shortcuts (Mac)
+    if (e.metaKey) {
+        if (
+            e.key === 'c' || e.key === 'C' || // Copy
+            e.key === 'u' || e.key === 'U' || // View Source
+            e.key === 's' || e.key === 'S' || // Save Page
+            e.key === 'p' || e.key === 'P' || // Print Page
+            e.key === 'a' || e.key === 'A'    // Select All
+        ) {
+            e.preventDefault();
+        }
+    }
+
+    // Block Inspect Element (Ctrl+Shift+I / Cmd+Option+I)
+    if ((e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C' || e.key === 'j' || e.key === 'J')) || 
+        (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C' || e.key === 'j' || e.key === 'J'))) {
+        e.preventDefault();
+    }
+});
+
+// 3. Prevent dragging of images (optional, to stop users from dragging UI assets to desktop)
+document.addEventListener('dragstart', function(e) {
+    if (e.target.nodeName.toUpperCase() === "IMG") {
+        e.preventDefault();
+    }
+});
         // --- Gender Toggle Logic ---
         function setGender(gender, clickedBtn) {
             // Update active button state
@@ -1056,6 +1165,10 @@
             if (selectedTool === 'Reset') {
                 console.log('Reset triggered (Note: Native Sketchfab API required to physically reset iframe).');
             }
+        }
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('collapsed');
         }
 
         // --- Tabs Logic ---
@@ -1385,9 +1498,11 @@
         };
 
         function updateInfoPanel(systemKey) {
-            // Retrieve data for the clicked system
             const data = systemData[systemKey];
-            if (!data) return;
+    if (!data) return;
+
+    // Add this line to make the panel visible again when clicked
+    document.querySelector('.info-panel').style.display = 'flex';
 
             // Update title
             document.querySelector('.panel-header h2').innerHTML = `${data.title} <span style="margin-left: auto; font-size: 16px; color: var(--text-muted); cursor: pointer;">🔖</span>`;
